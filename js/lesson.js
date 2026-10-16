@@ -136,7 +136,7 @@ const Lesson = (function () {
           h("div", { class: "wi-en" },
             en(w.en, "strong"),
             Speech.supported
-              ? h("button", { class: "play tiny", type: "button", "aria-label": "نطق " + w.en, onclick: () => Speech.say(w.en) }, icon("speaker"))
+              ? speakWithSlow("play tiny", "نطق " + w.en, slow => Speech.say(w.en, slow))
               : null,
             wordArNode(w.en)),
           h("div", { class: "wi-ar" }, w.ar),
@@ -227,10 +227,7 @@ const Lesson = (function () {
     }
 
     function speakBtn(text, label) {
-      return h("button", {
-        class: "play tiny", type: "button", title: label, "aria-label": label,
-        onclick: () => Speech.say(text)
-      }, icon("speaker"));
+      return speakWithSlow("play tiny", label, slow => Speech.say(text, slow));
     }
 
     // سطر السؤال + أيقونة صوت تقرا الجملة المكتوبة

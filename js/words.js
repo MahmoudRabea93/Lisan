@@ -42,7 +42,7 @@ const Words = (function () {
               h("div", { class: "wi-en" },
                 en(e.en, "strong"),
                 Speech.supported
-                  ? h("button", { class: "play tiny", type: "button", "aria-label": "نطق " + e.en, onclick: () => Speech.say(e.en) }, icon("speaker"))
+                  ? speakWithSlow("play tiny", "نطق " + e.en, slow => Speech.say(e.en, slow))
                   : null,
                 e.due <= Store.today() ? h("span", { class: "due-tag" }, "للمراجعة") : null),
               h("div", { class: "wi-ar" }, e.ar),

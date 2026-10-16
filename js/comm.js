@@ -143,7 +143,7 @@ const Comm = (function () {
                 h("div", { class: "wi-main" },
                   h("div", { class: "wi-en" }, en(w.en, "strong"),
                     Speech.supported
-                      ? h("button", { class: "play tiny", type: "button", "aria-label": "نطق " + w.en, onclick: () => Speech.say(w.en) }, icon("speaker"))
+                      ? speakWithSlow("play tiny", "نطق " + w.en, slow => Speech.say(w.en, slow))
                       : null),
                   h("div", { class: "wi-ar" }, w.ar))))))
           : null)
@@ -371,7 +371,7 @@ const Comm = (function () {
                 h("h2", { class: "card-title" }, "جمل احفظها من الموقف ده"),
                 h("ul", { class: "phrase-list" }, sc.phrases.map(p => h("li", {}, en(p),
                   Speech.supported
-                    ? h("button", { class: "play tiny", type: "button", "aria-label": "نطق الجملة", onclick: () => Speech.say(p) }, icon("speaker"))
+                    ? speakWithSlow("play tiny", "نطق الجملة", slow => Speech.say(p, slow))
                     : null))))
             : null,
           h("div", { class: "actions" },

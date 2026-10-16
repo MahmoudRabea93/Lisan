@@ -250,7 +250,7 @@ const Smart = (function () {
         item.kind === "word"
           ? h("div", { class: "word-row" }, en(item.question, "p", "word"),
               Speech.supported
-                ? h("button", { class: "play small", type: "button", "aria-label": "نطق الكلمة", onclick: () => Speech.say(item.word.en) }, icon("speaker"))
+                ? speakWithSlow("play small", "نطق الكلمة", slow => Speech.say(item.word.en, slow))
                 : null)
           : h("p", { class: "question", dir: "auto" }, item.question),
         list.node, why,

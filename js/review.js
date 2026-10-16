@@ -81,7 +81,7 @@ const Review = (function () {
         .map(p => (toArabic ? p.ar : p.en)).filter(t => t !== answer))].slice(0, 3);
 
       const exText = h("span", {});
-      const exBox = h("p", { class: "example", dir: "ltr", lang: "en", hidden: true }, exText, h("button", { class: "play tiny", type: "button", "aria-label": "نطق الجملة", onclick: () => Speech.say(exText.textContent) }, icon("speaker")));
+      const exBox = h("p", { class: "example", dir: "ltr", lang: "en", hidden: true }, exText, speakWithSlow("play tiny", "نطق الجملة", slow => Speech.say(exText.textContent, slow)));
       const feedback = h("div", { class: "feedback", role: "status", "aria-live": "polite" });
       const nextBtn = h("button", { class: "btn primary wide", type: "button", hidden: true }, "التالي");
 
@@ -106,7 +106,7 @@ const Review = (function () {
       });
 
       const speak = Speech.supported
-        ? h("button", { class: "play small", type: "button", "aria-label": "شغّل النطق", onclick: () => Speech.say(item.en) }, icon("speaker"))
+        ? speakWithSlow("play small", "شغّل النطق", slow => Speech.say(item.en, slow))
         : null;
       if (toArabic) setTimeout(() => Speech.say(item.en), 300);
 

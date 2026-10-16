@@ -215,7 +215,7 @@ const Browse = (function () {
                 h("div", { class: "wi-en" },
                   en(w.en, "strong"),
                   Speech.supported
-                    ? h("button", { class: "play tiny", type: "button", "aria-label": "نطق " + w.en, onclick: () => Speech.say(w.en) }, icon("speaker"))
+                    ? speakWithSlow("play tiny", "نطق " + w.en, slow => Speech.say(w.en, slow))
                     : null,
                   wordArNode(w.en)),
                 h("div", { class: "wi-ar" }, w.ar),

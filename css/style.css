@@ -1518,3 +1518,11 @@ a.lesson-row:hover { transform: none; background: var(--surface); border-color: 
 .wi-ex-ar { margin: 4px 0 0; color: var(--muted); font-size: .9rem; direction: rtl; }
 
 .sen-ar { display: block; margin-top: 4px; color: var(--muted); font-size: .9rem; direction: rtl; }
+
+/* زرار الصوت + أبطأ */
+.speak-group { display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; }
+.slow-btn {
+  font: inherit; font-size: .78rem; font-weight: 600; padding: 2px 9px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--accent-ink); cursor: pointer;
+}
+.slow-btn:hover { border-color: var(--accent); }

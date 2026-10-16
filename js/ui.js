@@ -15,10 +15,7 @@ function h(tag, attrs, ...kids) {
   });
   if (speak && typeof Speech !== "undefined" && Speech.supported) {
     const text = speak === true ? el.textContent : String(speak);
-    el.append(h("button", {
-      class: "play tiny", type: "button", title: "نطق الجملة", "aria-label": "نطق الجملة",
-      onclick: () => Speech.say(text)
-    }, icon("speaker")));
+    el.append(speakWithSlow("play tiny", "نطق الجملة", slow => Speech.say(text, slow)));
   }
   return el;
 }
@@ -34,6 +31,13 @@ function exArNode(en) {
   if (typeof Language !== "undefined" && Language.get() !== "ar") return null;
   const t = (window.EX_AR || {})[en];
   return t ? h("p", { class: "wi-ex-ar", dir: "rtl", lang: "ar" }, document.createTextNode(t)) : null;
+}
+
+// زرار صوت + زرار "أبطأ" جنبه. play(slow) بتشغّل الصوت، slow=true يعني ببطء
+function speakWithSlow(cls, label, play) {
+  return h("span", { class: "speak-group" },
+    h("button", { class: cls, type: "button", "aria-label": label, title: label, onclick: () => play(false) }, icon("speaker")),
+    h("button", { class: "slow-btn", type: "button", "aria-label": label + " ببطء", title: "ببطء", onclick: () => play(true) }, "أبطأ"));
 }
 
 // نص إنجليزي: اتجاه ولغة صح عشان قارئ الشاشة ينطقه إنجليزي
