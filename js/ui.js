@@ -231,6 +231,7 @@ function optionList(opts, answer, onAnswered) {
 
 function showFeedback(el, ok, answer) {
   el.className = "feedback " + (ok ? "right" : "wrong");
+  if (typeof Sound !== "undefined") Sound.play(!!ok);
   // replaceChildren turns null into the text "null", so drop empty parts first
   el.replaceChildren(...[
     h("span", { class: "fb-icon", "aria-hidden": "true" }, icon(ok ? "check" : "close")),

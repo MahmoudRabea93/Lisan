@@ -296,6 +296,7 @@ const Lesson = (function () {
         input.disabled = true;
         checkBtn.hidden = true;
         feedback.className = "feedback " + (ok ? "right" : "wrong");
+        if (typeof Sound !== "undefined") Sound.play(!!ok);
         feedback.textContent = explain(ok);
         nextBtn.hidden = false;
         nextBtn.focus();
