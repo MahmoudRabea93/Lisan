@@ -268,7 +268,7 @@ const Comm = (function () {
     }
 
     function bubble(who, text) {
-      return h("div", { class: "msg " + who }, h("span", { class: "bub" }, text));
+      return h("div", { class: "msg " + who }, withAr(h("span", { class: "bub" }, text), text));
     }
 
     function turn() {

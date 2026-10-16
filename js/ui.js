@@ -23,9 +23,31 @@ function h(tag, attrs, ...kids) {
   return el;
 }
 
+// ترجمة عربي للكلمة (من data/words_ar.js): بتتعرض جنب الكلمة الإنجليزي
+function wordArNode(en) {
+  const t = (window.WORD_AR || {})[en];
+  return t ? h("span", { class: "wi-tr", dir: "rtl", lang: "ar" }, document.createTextNode(t)) : null;
+}
+
+// ترجمة عربي لجملة المثال: بتظهر بس لما الواجهة تكون عربي
+function exArNode(en) {
+  if (typeof Language !== "undefined" && Language.get() !== "ar") return null;
+  const t = (window.EX_AR || {})[en];
+  return t ? h("p", { class: "wi-ex-ar", dir: "rtl", lang: "ar" }, document.createTextNode(t)) : null;
+}
+
 // نص إنجليزي: اتجاه ولغة صح عشان قارئ الشاشة ينطقه إنجليزي
+// لو الجملة ليها ترجمة عربي وإحنا في الوضع العربي، بنضيفها جوه العنصر
+function withAr(el, text) {
+  const tr = text && (window.SENT_AR || {})[text];
+  if (tr && typeof Language !== "undefined" && Language.get() === "ar") {
+    el.append(h("span", { class: "sen-ar", dir: "rtl", lang: "ar" }, document.createTextNode(tr)));
+  }
+  return el;
+}
+
 function en(text, tag, cls) {
-  return h(tag || "span", { dir: "ltr", lang: "en", class: cls || null }, text);
+  return withAr(h(tag || "span", { dir: "ltr", lang: "en", class: cls || null }, text), text);
 }
 
 function shuffle(arr) {

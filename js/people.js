@@ -47,7 +47,7 @@ const People = (function () {
           avatar(p),
           h("div", { class: "dline-body" },
             h("b", {}, p.name),
-            h("span", {}, l.text === null ? h("span", { class: "gap" }, "______") : l.text)));
+            withAr(h("span", {}, l.text === null ? h("span", { class: "gap" }, "______") : l.text), l.text)));
       }));
   }
 

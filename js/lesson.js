@@ -137,9 +137,10 @@ const Lesson = (function () {
             en(w.en, "strong"),
             Speech.supported
               ? h("button", { class: "play tiny", type: "button", "aria-label": "نطق " + w.en, onclick: () => Speech.say(w.en) }, icon("speaker"))
-              : null),
+              : null,
+            wordArNode(w.en)),
           h("div", { class: "wi-ar" }, w.ar),
-          w.ex ? en(w.ex, "p", "wi-ex") : null))));
+          w.ex ? en(w.ex, "p", "wi-ex") : null, w.ex ? exArNode(w.ex) : null))));
     }
 
     // ---------- شاشات الدرس ----------
@@ -153,7 +154,7 @@ const Lesson = (function () {
               h("span", {}, "الدرس " + (lesson.pos || ""))))),
         h("h1", { tabindex: "-1", "data-focus": "", dir: "auto" }, lesson.title),
         lesson.ar ? h("p", { class: "muted" }, lesson.ar) : null,
-        h("p", { class: "explain" }, lesson.explanation),
+        withAr(h("p", { class: "explain" }, lesson.explanation), lesson.explanation),
         h("h2", { class: "sub" }, "كلمات الدرس"),
         wordList(lesson.vocab),
         h("p", { class: "muted" }, "بعد كده: المفردات، الاستماع، المحادثة، القواعد، القراءة، الكتابة. وبعدها امتحان الدرس في صفحة منفصلة."),
@@ -234,7 +235,7 @@ const Lesson = (function () {
 
     // سطر السؤال + أيقونة صوت تقرا الجملة المكتوبة
     function questionRow(text) {
-      const q = h("p", { class: "question", dir: "auto" }, text);
+      const q = withAr(h("p", { class: "question", dir: "auto" }, text), text);
       const say = speakText(text);
       if (!Speech.supported || !/[A-Za-z]/.test(say)) return q;
       const english = !/[\u0600-\u06FF]/.test(String(text));
@@ -244,7 +245,7 @@ const Lesson = (function () {
     function choiceView(ex, done) {
       const passageSay = ex.passage && Speech.supported ? speakText(ex.passage) : "";
       return choiceLike(ex, done, h("div", {},
-        ex.prompt ? h("p", { class: "prompt" }, ex.prompt) : null,
+        ex.prompt ? withAr(h("p", { class: "prompt" }, ex.prompt), ex.prompt) : null,
         ex.passage ? en(ex.passage, "blockquote", "passage") : null,
         passageSay ? h("div", { class: "passage-audio" }, speakBtn(passageSay, "اسمع النص"), h("span", { class: "muted small" }, "اسمع النص")) : null,
         ex.dialogue ? dialogueBox(ex.dialogue) : null,
@@ -274,7 +275,7 @@ const Lesson = (function () {
       return choiceLike(ex, done, h("div", {},
         h("p", { class: "prompt" }, "اسمع الحوار القصير وجاوب"),
         listenControls(play),
-        h("p", { class: "question", dir: "auto" }, ex.question)),
+        withAr(h("p", { class: "question", dir: "auto" }, ex.question), ex.question)),
         () => { transcript.open = true; }, transcript);
     }
 
@@ -316,7 +317,7 @@ const Lesson = (function () {
     function writeView(ex, done) {
       return typedView(ex, done, h("div", {},
         h("p", { class: "prompt" }, "اكتب جملة"),
-        h("p", { class: "question" }, ex.prompt)),
+        withAr(h("p", { class: "question" }, ex.prompt), ex.prompt)),
         v => {
           const t = normText(v);
           return t.split(" ").length >= 3 && (" " + t + " ").includes(" " + normText(ex.must) + " ");

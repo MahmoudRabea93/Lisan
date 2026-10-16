@@ -185,7 +185,7 @@ const Browse = (function () {
     const body = h("div", {},
       h("section", { class: "card lesson-hero" },
         h("div", { class: "lesson-hero-main" },
-          h("p", { class: "explain" }, entry.explanation || "المحتوى قيد الإعداد."),
+          withAr(h("p", { class: "explain" }, entry.explanation || "المحتوى قيد الإعداد."), entry.explanation),
           st === "open" || st === "done"
             ? h("div", { class: "actions" },
                 h("a", { class: "btn primary", href: Router.href("/lesson/" + entry.id + "/run") },
@@ -216,9 +216,10 @@ const Browse = (function () {
                   en(w.en, "strong"),
                   Speech.supported
                     ? h("button", { class: "play tiny", type: "button", "aria-label": "نطق " + w.en, onclick: () => Speech.say(w.en) }, icon("speaker"))
-                    : null),
+                    : null,
+                  wordArNode(w.en)),
                 h("div", { class: "wi-ar" }, w.ar),
-                w.ex ? en(w.ex, "p", "wi-ex") : null)))))
+                w.ex ? en(w.ex, "p", "wi-ex") : null, w.ex ? exArNode(w.ex) : null)))))
         : null,
 
       st !== "soon"
