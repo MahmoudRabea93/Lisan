@@ -5,10 +5,10 @@ window.COURSES.push({
   level: "A1",
   units: [
     {
-      id: "a1-u1", title: "Introductions", goals: ["talk", "work", "travel"],
+      id: "a1-u1", title: "Introductions", ar: "التعارف", goals: ["talk", "work", "travel"],
       lessons: [
         {
-          id: "a1-u1-l1", title: "Greetings", ar: "Greetings",
+          id: "a1-u1-l1", title: "Greetings", ar: "التحيات",
           explanation: "Use Hello in any situation, and Hi with friends. Good morning is for the morning, Good evening is for the evening, and Goodbye is for leaving. To ask how someone is, say: How are you? The usual answer is: I'm fine, thank you.",
           vocab: V("Hello|A common greeting|Hello, how are you?", "Hi|An informal greeting, used with friends|Hi, Sara!", "Good morning|A greeting used before noon|Good morning, teacher.",
             "Good evening|A greeting used after sunset|Good evening, everyone.", "Goodbye|A word used when leaving|Goodbye, see you tomorrow.",
@@ -30,7 +30,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u1-l2", title: "Introducing yourself", ar: "Introducing yourself",
+          id: "a1-u1-l2", title: "Introducing yourself", ar: "تعريف بنفسك",
           explanation: "To say your name, use My name is ... To say where you are from, use I am from ... You can shorten I am to I'm.",
           vocab: V("name|The word you are called by|My name is Omar.", "from|Showing the place someone comes from|I am from Egypt.", "Egypt|A country in North Africa|I live in Egypt.",
             "Cairo|The capital city of Egypt|Cairo is a big city.", "I'm|Short form of I am|I'm a student."),
@@ -50,7 +50,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u1-l3", title: "The verb to be", ar: "The verb to be",
+          id: "a1-u1-l3", title: "The verb to be", ar: "فعل to be",
           explanation: "Use am with I, is with he / she / it, and are with you / we / they. Examples: I am a student. She is a doctor. They are friends.",
           vocab: V("student|A person who studies at a school or university|She is a student.", "teacher|A person who teaches|My teacher is kind.", "doctor|A person who treats sick people|He is a doctor.",
             "sister|A female sibling|She is my sister.", "friends|People you like and spend time with|They are my friends."),
@@ -70,7 +70,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u1-l4", title: "Polite phrases", ar: "Polite phrases",
+          id: "a1-u1-l4", title: "Polite phrases", ar: "عبارات مؤدبة",
           explanation: "Polite phrases we use every day: Please (used to ask politely), Sorry (to apologize), Excuse me (to get attention or pass someone), Welcome (to greet a guest), Nice to meet you (said when meeting someone). The usual reply to Thank you is You're welcome.",
           vocab: V("please|A polite word used when asking for something|Sit down, please.", "sorry|Used to apologize|Sorry, I'm late.", "excuse me|Used to get someone's attention politely|Excuse me, where is the bank?",
             "welcome|Used to greet a guest|Welcome to Cairo.", "nice to meet you|Said when you meet someone for the first time|Nice to meet you, Sara.", "you're welcome|The reply to thank you|You're welcome!"),
@@ -91,7 +91,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u1-l5", title: "Question words", ar: "Question words",
+          id: "a1-u1-l5", title: "Question words", ar: "أدوات الاستفهام",
           explanation: "Question words: What (what), Where (where), Who (who), When (when), Why (why). Examples: What is your name? Where are you from? Who is he?",
           vocab: V("what|Used to ask about things|What is this?", "where|Used to ask about a place|Where are you from?", "who|Used to ask about a person|Who is he?",
             "when|Used to ask about time|When is the class?", "why|Used to ask for a reason|Why are you late?"),
@@ -113,10 +113,10 @@ window.COURSES.push({
       ]
     },
     {
-      id: "a1-u2", title: "Daily life", goals: ["talk", "travel"],
+      id: "a1-u2", title: "Daily life", ar: "الحياة اليومية", goals: ["talk", "travel"],
       lessons: [
         {
-          id: "a1-u2-l1", title: "Numbers 1-10", ar: "Numbers 1-10",
+          id: "a1-u2-l1", title: "Numbers 1-10", ar: "الأرقام من 1 لـ 10",
           explanation: "Numbers 1 to 10: one, two, three, four, five, six, seven, eight, nine, ten.",
           vocab: V("one|The number 1|I have one brother.", "two|The number 2|I have two sisters.", "three|The number 3|There are three chairs.",
             "four|The number 4|He has four books.", "five|The number 5|I wait five minutes.", "six|The number 6|It is six o'clock.",
@@ -137,7 +137,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u2-l2", title: "Age", ar: "Age",
+          id: "a1-u2-l2", title: "Age", ar: "السن",
           explanation: "To ask about age, say How old are you? The answer is: I am 25 years old. We write years old after the number.",
           vocab: V("age|How old someone is|What is your age?", "year|A period of twelve months|I am twenty years old.", "twenty|The number 20|He is twenty.",
             "brother|A male sibling|My brother is ten.", "How old are you?|A question asking about age|How old are you, Ahmed?"),
@@ -157,7 +157,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u2-l3", title: "Numbers 11-20", ar: "Numbers 11-20",
+          id: "a1-u2-l3", title: "Numbers 11-20", ar: "الأرقام من 11 لـ 20",
           explanation: "Numbers: eleven (11), twelve (12), thirteen (13), fourteen (14), fifteen (15), sixteen (16), seventeen (17), eighteen (18), nineteen (19), twenty (20). Numbers from 13 to 19 end with teen.",
           vocab: V("eleven|The number 11|I have eleven books.", "twelve|The number 12|There are twelve months in a year.", "thirteen|The number 13|He is thirteen years old.",
             "fifteen|The number 15|I need fifteen minutes.", "seventeen|The number 17|She is seventeen.", "eighteen|The number 18|My sister is eighteen."),
@@ -178,7 +178,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u2-l4", title: "Colors", ar: "Colors",
+          id: "a1-u2-l4", title: "Colors", ar: "الألوان",
           explanation: "Colors: red, blue, green, yellow, black, white. We put the color before the noun: a red car, a blue pen.",
           vocab: V("red|The color of blood or a tomato|I have a red car.", "blue|The color of the sky on a clear day|The sky is blue.", "green|The color of grass|Grass is green.",
             "yellow|The color of the sun or a banana|A banana is yellow.", "black|The darkest color|She has a black bag.", "white|The color of snow or milk|My shirt is white."),
@@ -198,7 +198,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u2-l5", title: "Daily routine", ar: "Daily routine",
+          id: "a1-u2-l5", title: "Daily routine", ar: "الروتين اليومي",
           explanation: "We use the simple present for daily habits with I / you / we / they: I wake up at six. I go to work at eight. We use at before the time.",
           vocab: V("wake up|To stop sleeping in the morning|I wake up at six.", "go to work|To travel to your job|I go to work by bus.", "come home|To return to your house|We come home at five.",
             "take a shower|To wash your body with water|I take a shower every morning.", "go to bed|To go to sleep at night|They go to bed at eleven.", "every day|On each day|I study every day."),
@@ -220,10 +220,10 @@ window.COURSES.push({
       ]
     },
     {
-      id: "a1-u3", title: "Family", goals: ["talk"],
+      id: "a1-u3", title: "Family", ar: "العيلة", goals: ["talk"],
       lessons: [
         {
-          id: "a1-u3-l1", title: "My family", ar: "My family",
+          id: "a1-u3-l1", title: "My family", ar: "عيلتي",
           explanation: "Family words: mother, father, parents (both parents), brother, sister, family. Example: This is my family. I have one brother and two sisters.",
           vocab: V("mother|Your female parent|My mother is a teacher.", "father|Your male parent|My father works in a bank.", "parents|Your mother and father|My parents live in Cairo.",
             "family|The people you are related to|I love my family.", "son|A male child|He has one son.", "daughter|A female child|She has a daughter."),
@@ -263,7 +263,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u3-l3", title: "Relatives", ar: "Relatives",
+          id: "a1-u3-l3", title: "Relatives", ar: "الأقارب",
           explanation: "Relatives: grandfather, grandmother, uncle (your father's or mother's brother), aunt (your father's or mother's sister), cousin (your uncle's or aunt's child). Example: My grandmother is kind.",
           vocab: V("grandfather|Your father's or mother's father|My grandfather is seventy.", "grandmother|Your father's or mother's mother|My grandmother cooks well.", "uncle|Your father's or mother's brother|My uncle lives in Giza.",
             "aunt|Your father's or mother's sister|My aunt is a nurse.", "cousin|The child of your uncle or aunt|My cousin is my friend."),
@@ -284,7 +284,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u3-l4", title: "Describing people", ar: "Describing people",
+          id: "a1-u3-l4", title: "Describing people", ar: "وصف الناس",
           explanation: "We describe people with to be + adjective: He is tall. She is kind. Adjectives do not change for singular and plural: They are tall.",
           vocab: V("tall|Having a large height|My brother is tall.", "short|Not tall|She is short.", "young|Not old|He is a young man.",
             "old|Having lived for many years|My grandfather is old.", "kind|Friendly and caring|She is a kind woman.", "funny|Making people laugh|He is very funny."),
@@ -304,7 +304,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u3-l5", title: "Jobs", ar: "Jobs (a / an)",
+          id: "a1-u3-l5", title: "Jobs", ar: "الوظايف (a / an)",
           explanation: "We put a before a job: a teacher. Before a vowel sound (a, e, i, o, u) we use an: an engineer, an actor. Example: He is an engineer. She is a nurse.",
           vocab: V("engineer|A person who designs and builds things|My father is an engineer.", "nurse|A person who cares for patients|She is a nurse.", "driver|A person who drives a vehicle for work|He is a taxi driver.",
             "farmer|A person who works on a farm|The farmer has a farm.", "cook|A person who prepares food|My uncle is a cook.", "job|The work you do to earn money|What is your job?"),
@@ -326,10 +326,10 @@ window.COURSES.push({
       ]
     },
     {
-      id: "a1-u4", title: "Food and drink", goals: ["travel", "talk"],
+      id: "a1-u4", title: "Food and drink", ar: "الأكل والشرب", goals: ["travel", "talk"],
       lessons: [
         {
-          id: "a1-u4-l1", title: "Food and drink", ar: "Food and drink",
+          id: "a1-u4-l1", title: "Food and drink", ar: "الأكل والشرب",
           explanation: "Basic words: water, bread, rice, chicken, apple, tea, coffee, milk. We say I eat bread and I drink water.",
           vocab: V("water|A clear drink|I drink water every day.", "bread|A food made from flour and baked|I eat bread for breakfast.", "rice|A small white grain we cook|We eat rice and chicken.",
             "chicken|A meat from a bird|She cooks chicken.", "apple|A round red or green fruit|I eat an apple.", "tea|A hot drink made from leaves|I drink tea in the morning.",
@@ -351,7 +351,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u4-l2", title: "Like and don't like", ar: "Like and don't like",
+          id: "a1-u4-l2", title: "Like and don't like", ar: "بحب ومش بحب",
           explanation: "To say you like something: I like ... To make it negative, add don't: I don't like fish. For a question: Do you like tea? The answer: Yes, I do. Or No, I don't.",
           vocab: V("like|To enjoy something|I like tea.", "don't like|To not enjoy something|I don't like coffee.", "love|To like something very much|I love pizza.",
             "fish|An animal that lives in water and is eaten|Do you like fish?", "pizza|A flat bread with cheese and toppings|We eat pizza on Fridays.", "favorite|The one you like most|Pizza is my favorite food."),
@@ -371,7 +371,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u4-l3", title: "Fruit and vegetables", ar: "Fruit and vegetables",
+          id: "a1-u4-l3", title: "Fruit and vegetables", ar: "الفاكهة والخضار",
           explanation: "Fruit: banana, orange. Vegetables: tomato, potato, onion. We say I like bananas (plural) and I eat a banana (singular). Juice means a drink made from fruit.",
           vocab: V("banana|A long yellow fruit|I like bananas.", "orange|A round orange fruit|She eats an orange.", "tomato|A red fruit used as a vegetable|I need a tomato.",
             "potato|A brown vegetable that grows underground|We cook potatoes.", "onion|A round vegetable that makes you cry when cut|She cuts an onion.", "juice|A drink made from fruit|I like apple juice."),
@@ -392,7 +392,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u4-l4", title: "Meals", ar: "Meals",
+          id: "a1-u4-l4", title: "Meals", ar: "الوجبات",
           explanation: "Meals: breakfast, lunch, dinner. We say: I have breakfast at seven. For hunger and thirst: I'm hungry. I'm thirsty.",
           vocab: V("breakfast|The first meal of the day|I have breakfast at seven.", "lunch|The meal in the middle of the day|We have lunch at two.", "dinner|The main meal in the evening|Dinner is ready.",
             "hungry|Wanting to eat|I'm hungry.", "thirsty|Wanting to drink|I'm thirsty. I want water.", "snack|A small amount of food between meals|I eat a snack."),
@@ -412,7 +412,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u4-l5", title: "At the restaurant", ar: "At the restaurant",
+          id: "a1-u4-l5", title: "At the restaurant", ar: "في المطعم",
           explanation: "At a restaurant we say: Can I have the menu, please? (the list of food) or Can I have a coffee, please? At the end: The bill, please.",
           vocab: V("menu|The list of food and drinks|Can I have the menu, please?", "waiter|A person who serves food in a restaurant|The waiter is kind.", "bill|The money you pay for your meal|The bill, please.",
             "order|To ask for food or drink|I want to order.", "delicious|Very tasty|The food is delicious.", "restaurant|A place where you buy and eat food|We eat in a restaurant."),
@@ -434,10 +434,10 @@ window.COURSES.push({
       ]
     },
     {
-      id: "a1-u5", title: "Home and places", goals: ["travel"],
+      id: "a1-u5", title: "Home and places", ar: "البيت والأماكن", goals: ["travel"],
       lessons: [
         {
-          id: "a1-u5-l1", title: "Around the house", ar: "Around the house",
+          id: "a1-u5-l1", title: "Around the house", ar: "حوالين البيت",
           explanation: "Rooms and things: kitchen, bedroom, bathroom, door, window, table, chair. We ask: Where is ...? And answer: It is in the kitchen.",
           vocab: V("kitchen|The room where you cook|My mother is in the kitchen.", "bedroom|The room where you sleep|I sleep in my bedroom.", "bathroom|The room with a toilet and a shower|The bathroom is small.",
             "door|The thing you open to enter a room|Close the door, please.", "window|An opening in a wall for light and air|Open the window.", "table|Furniture with a flat top and legs|The book is on the table.", "chair|Furniture you sit on|Sit on the chair."),
@@ -457,7 +457,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u5-l2", title: "There is and there are", ar: "There is and there are",
+          id: "a1-u5-l2", title: "There is and there are", ar: "There is و There are",
           explanation: "We use There is with a singular noun, and There are with a plural noun: There is a table. There are two chairs. For questions: Is there a ...?",
           vocab: V("there is|Used for one thing|There is a bed in the room.", "there are|Used for more than one thing|There are two windows.", "bed|Furniture for sleeping|The bed is big.",
             "room|A part of a building with walls|This room is clean.", "big|Large in size|We have a big house.", "small|Not large in size|It is a small kitchen."),
@@ -477,7 +477,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u5-l3", title: "Prepositions of place", ar: "Prepositions of place",
+          id: "a1-u5-l3", title: "Prepositions of place", ar: "حروف مكان",
           explanation: "To say where something is: in (inside), on (on top of), under (below), behind (at the back of), next to (beside), in front of (facing). Example: The cat is under the table.",
           vocab: V("under|Below something|The cat is under the chair.", "behind|At the back of something|The ball is behind the door.", "next to|Beside something|The bank is next to the market.",
             "in front of|Facing something, before it|The car is in front of the house.", "between|In the middle of two things|The bed is between two windows.", "cat|A small animal that says meow|The cat is under the table."),
@@ -498,7 +498,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u5-l4", title: "Places in the city", ar: "Places in the city",
+          id: "a1-u5-l4", title: "Places in the city", ar: "أماكن في المدينة",
           explanation: "Places in the city: hospital, bank, market, pharmacy, park, mosque. We ask: Where is the bank? And answer: It's next to the market.",
           vocab: V("hospital|A place where sick people are treated|The hospital is near my house.", "bank|A place where you keep and borrow money|The bank opens at nine.", "market|A place where you buy food and things|I buy fruit at the market.",
             "pharmacy|A shop where you buy medicine|The pharmacy is open.", "park|An outdoor area with grass and trees|The children play in the park.", "mosque|A building where Muslims pray|The mosque is next to the school."),
@@ -518,7 +518,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u5-l5", title: "Directions", ar: "Directions",
+          id: "a1-u5-l5", title: "Directions", ar: "الاتجاهات",
           explanation: "For directions: Turn left, Turn right, Go straight. For distance: near (close), far (not close).",
           vocab: V("turn left|Change direction to the left|Turn left at the bank.", "turn right|Change direction to the right|Turn right at the park.", "go straight|Keep moving forward|Go straight for two minutes.",
             "near|Close to a place|The market is near.", "far|Not close to a place|The airport is far.", "street|A road in a town with houses or shops|The school is in this street."),
@@ -540,10 +540,10 @@ window.COURSES.push({
       ]
     },
     {
-      id: "a1-u6", title: "Time and weather", goals: ["work", "travel"],
+      id: "a1-u6", title: "Time and weather", ar: "الوقت والجو", goals: ["work", "travel"],
       lessons: [
         {
-          id: "a1-u6-l1", title: "Days of the week", ar: "Days of the week",
+          id: "a1-u6-l1", title: "Days of the week", ar: "أيام الأسبوع",
           explanation: "Days of the week: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday. We always write them with a capital letter. We say on before the day: I work on Sunday.",
           vocab: V("Monday|The first working day of the week|I work on Monday.", "Tuesday|The day after Monday|I have class on Tuesday.", "Wednesday|The day in the middle of the week|We have a meeting on Wednesday.",
             "Thursday|The day before Friday|I play football on Thursday.", "Friday|The day before Saturday|We visit my uncle on Friday.", "Saturday|The day after Friday|I rest on Saturday.",
@@ -564,7 +564,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u6-l2", title: "What time is it?", ar: "What time is it?",
+          id: "a1-u6-l2", title: "What time is it?", ar: "الساعة كام؟",
           explanation: "To ask about the time: What time is it? Answers: It's three o'clock (exactly 3:00), It's half past three (3:30), It's quarter past three (3:15).",
           vocab: V("time|The hour shown on a clock|What time is it?", "o'clock|Used for exact hours|It's six o'clock.", "half past|Thirty minutes after the hour|It's half past two.",
             "quarter past|Fifteen minutes after the hour|It's quarter past five.", "morning|The part of the day from sunrise until noon|I wake up in the morning.", "night|The dark part of the day|I sleep at night."),
@@ -585,7 +585,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u6-l3", title: "Months of the year", ar: "Months of the year",
+          id: "a1-u6-l3", title: "Months of the year", ar: "شهور السنة",
           explanation: "Months: January, February, March, April, May, June, July, August, September, October, November, December. We write them with a capital letter and use in before the month: My birthday is in June.",
           vocab: V("month|One of the twelve parts of a year|There are twelve months in a year.", "January|The first month of the year|January is cold.", "March|The third month of the year|Spring starts in March.",
             "June|The sixth month of the year|My birthday is in June.", "September|The ninth month of the year|School starts in September.", "December|The last month of the year|December is the last month."),
@@ -605,7 +605,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u6-l4", title: "Seasons and weather", ar: "Seasons and weather",
+          id: "a1-u6-l4", title: "Seasons and weather", ar: "الفصول والجو",
           explanation: "Seasons: summer and winter. Weather: It's hot, It's cold, It's sunny. We ask: What's the weather like?",
           vocab: V("summer|The hot season of the year|It is hot in summer.", "winter|The cold season of the year|It is cold in winter.", "hot|Having a high temperature|It is very hot today.",
             "cold|Having a low temperature|The water is cold.", "sunny|With a lot of sunshine|It is sunny today.", "weather|What the sky and air are like|What's the weather like?"),
@@ -625,7 +625,7 @@ window.COURSES.push({
           ]
         },
         {
-          id: "a1-u6-l5", title: "How often?", ar: "How often?",
+          id: "a1-u6-l5", title: "How often?", ar: "بتعمل كده قد إيه؟",
           explanation: "To say how often: always (every time), usually (most of the time), often (many times), sometimes (now and then), never (not at all). We put them before the verb: I always drink tea. She never eats fish.",
           vocab: V("always|Every time|I always drink tea.", "usually|Most of the time|I usually wake up at six.", "often|Many times|We often eat rice.",
             "sometimes|Now and then|He sometimes plays football.", "never|Not at any time|She never eats fish."),

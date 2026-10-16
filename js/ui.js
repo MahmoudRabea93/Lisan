@@ -53,10 +53,25 @@ function autoAr(text) {
   return null;
 }
 
-// الترجمة العربي: من الجمل أو التعريفات أو الأمثلة أو الأسئلة التلقائية. بتظهر بس في الوضع العربي
+// بحث الترجمة: بالنص كما هو، وبعدين من غير فرق بين الحروف الكبيرة والصغيرة، وبعدين في قاموس الكلمات
+function arLookup(text) {
+  const maps = [window.SENT_AR, window.DEF_AR, window.EX_AR, window.WORD_AR];
+  const key = text.trim();
+  for (const m of maps) if (m && m[key]) return m[key];
+  const bare = key.replace(/^["“”']+|["“”']+$/g, "");
+  if (bare !== key && bare) { const t = arLookup(bare); if (t) return t; }
+  const low = key.toLowerCase().replace(/[.?!]+$/, "");
+  for (const m of maps) {
+    if (!m) continue;
+    for (const k in m) if (k.toLowerCase().replace(/[.?!]+$/, "") === low) return m[k];
+  }
+  return null;
+}
+
+// ترجمة عربي: من الجمل أو التعريفات أو الأمثلة أو الكلمات أو الأسئلة التلقائية. بتظهر بس في الوضع العربي
 function withAr(el, text) {
   if (!text || typeof Language === "undefined" || Language.get() !== "ar") return el;
-  const tr = (window.SENT_AR || {})[text] || (window.DEF_AR || {})[text] || (window.EX_AR || {})[text] || autoAr(text);
+  const tr = arLookup(text) || autoAr(text);
   if (tr) {
     el.append(h("span", { class: "sen-ar", dir: "rtl", lang: "ar" }, document.createTextNode(tr)));
   }

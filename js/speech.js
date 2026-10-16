@@ -40,19 +40,38 @@ const Speech = (function () {
   }
 
   // الكلام بيتشغّل بعد cancel بمهلة صغيرة، لأن بعض المتصفحات بتلغي الكلام الجديد لو جه فوراً
+  // في الوضع البطيء: بنقسم الجملة كلمة كلمة ونسيب فاصل بين كل كلمة.
+  // كده الصوت بيبان بطيء حتى لو المتصفح/الصوت مابيحترمش خاصية السرعة (زي أصوات جوجل في Chrome)
+  const SLOW_GAP = 800; // ملي ثانية بين كل كلمة
+  let slowTimers = [];
+
   function speakQueue(items, slow) {
     if (!supported) return;
     speechSynthesis.cancel();
+    slowTimers.forEach(clearTimeout);
+    slowTimers = [];
     if (speechSynthesis.paused) speechSynthesis.resume();
     setTimeout(() => {
-      items.forEach(it => {
-        const u = new SpeechSynthesisUtterance(it.text);
-        u.lang = "en-US";
-        const v = it.voice;
-        if (v) u.voice = v;
-        u.rate = slow ? 0.7 : 0.95;
-        u.pitch = it.pitch || 1;
-        speechSynthesis.speak(u);
+      let step = 0;
+      items.forEach((it, idx) => {
+        const pieces = slow ? String(it.text).split(/\s+/).filter(Boolean) : [it.text];
+        const speakPiece = piece => {
+          const u = new SpeechSynthesisUtterance(piece);
+          u.lang = "en-US";
+          if (it.voice) u.voice = it.voice;
+          u.rate = slow ? 0.7 : 0.95;
+          u.pitch = it.pitch || 1;
+          speechSynthesis.speak(u);
+        };
+        pieces.forEach(piece => {
+          if (slow) {
+            slowTimers.push(setTimeout(() => speakPiece(piece), step * SLOW_GAP));
+            step++;
+          } else {
+            speakPiece(piece);
+          }
+        });
+        if (slow && idx < items.length - 1) step++; // فاصل أطول بين سطور الحوار
       });
     }, 60);
   }
