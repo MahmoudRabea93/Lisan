@@ -42,9 +42,22 @@ function speakWithSlow(cls, label, play) {
 
 // نص إنجليزي: اتجاه ولغة صح عشان قارئ الشاشة ينطقه إنجليزي
 // لو الجملة ليها ترجمة عربي وإحنا في الوضع العربي، بنضيفها جوه العنصر
+// أسئلة بتتولّد تلقائي (معنى كلمة، أنهي كلمة معناها...، الجملة فيها كلمة...)
+function autoAr(text) {
+  const W = window.WORD_AR || {}, D = window.DEF_AR || {};
+  let m;
+  if ((m = text.match(/^What does "(.+)" mean\?$/))) return `معنى "${m[1]}" إيه؟`;
+  if ((m = text.match(/^Which word means "(.+)"\?$/))) return `أنهي كلمة معناها "${D[m[1]] || m[1]}"؟`;
+  if ((m = text.match(/^The sentence contains the word “(.+)” \((.+)\)$/))) return `الجملة فيها كلمة “${m[1]}” (${D[m[2]] || m[2]})`;
+  if ((m = text.match(/^Write an English sentence using the word “(.+)” \((.+)\)$/))) return `اكتب جملة إنجليزي فيها كلمة “${m[1]}” (${D[m[2]] || m[2]})`;
+  return null;
+}
+
+// الترجمة العربي: من الجمل أو التعريفات أو الأمثلة أو الأسئلة التلقائية. بتظهر بس في الوضع العربي
 function withAr(el, text) {
-  const tr = text && (window.SENT_AR || {})[text];
-  if (tr && typeof Language !== "undefined" && Language.get() === "ar") {
+  if (!text || typeof Language === "undefined" || Language.get() !== "ar") return el;
+  const tr = (window.SENT_AR || {})[text] || (window.DEF_AR || {})[text] || (window.EX_AR || {})[text] || autoAr(text);
+  if (tr) {
     el.append(h("span", { class: "sen-ar", dir: "rtl", lang: "ar" }, document.createTextNode(tr)));
   }
   return el;
@@ -180,7 +193,7 @@ function optionList(opts, answer, onAnswered) {
       "aria-keyshortcuts": String(idx + 1)
     },
       h("span", { class: "key", "aria-hidden": "true" }, String(idx + 1)),
-      h("span", { class: "opt-text" }, opt));
+      withAr(h("span", { class: "opt-text" }, opt), opt));
     b.addEventListener("click", () => {
       if (answered) return;
       answered = true;

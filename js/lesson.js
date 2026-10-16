@@ -107,7 +107,12 @@ const Lesson = (function () {
         h("div", { class: "topbar-main" },
           h("div", { class: "topbar-row" },
             h("strong", { dir: "auto" }, lesson.title),
-            h("span", {}, `${Math.min(i - startAt + 1, endAt - startAt)} / ${endAt - startAt}`)),
+            h("span", {}, (() => {
+          // العداد: رقم السؤال الحالي من إجمالي أسئلة الجزء ده بس
+          const total = Math.max(1, endAt - startAt);
+          const cur = Math.min(Math.max(i - startAt + 1, 1), total);
+          return `${cur} / ${total}`;
+        })())),
           h("div", {
             class: "progress", role: "progressbar", "aria-label": "تقدمك في الدرس",
             "aria-valuemin": "0", "aria-valuemax": String(endAt - startAt), "aria-valuenow": String(i - startAt)
