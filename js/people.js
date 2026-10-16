@@ -13,9 +13,33 @@ const People = (function () {
     for (const c of String(s)) x = (x * 31 + c.charCodeAt(0)) | 0;
     return Math.abs(x);
   }
+  // الأسماء المعروفة وألوانها وجنسها (عشان لو الحوار عرّف شخص باسمه يتعرض بنفس الشكل)
+  const KNOWN = {};
+  PAIRS.forEach(p => { KNOWN[p.A.name] = p.A; KNOWN[p.B.name] = p.B; });
+
+  // لو الحوار بيقول "My name is X" على لسان شخص، الاسم ده هو اسمه في الحوار
+  function introducedNames(lines) {
+    const out = {};
+    (lines || []).forEach(l => {
+      const m = l && l.text && /^My name is ([A-Z][a-z]+)\.?$/.exec(l.text);
+      if (m && !out[l.who]) out[l.who] = m[1];
+    });
+    return out;
+  }
+
   function pairFor(lines) {
     const seed = (lines || []).map(l => (l && l.text) || "").join("|");
-    return PAIRS[hash(seed) % PAIRS.length];
+    const base = PAIRS[hash(seed) % PAIRS.length];
+    const intro = introducedNames(lines);
+    const pair = { A: { ...base.A }, B: { ...base.B } };
+    ["A", "B"].forEach(who => {
+      const name = intro[who];
+      if (!name) return;
+      const other = who === "A" ? "B" : "A";
+      if (pair[other].name === name) return;
+      pair[who] = { ...(KNOWN[name] || { gender: base[who].gender, color: base[who].color }), name };
+    });
+    return pair;
   }
 
   // أفاتار بسيط بالـ SVG: لون خلفية، شعر حسب الجنس، ولبس بلون الشخص
