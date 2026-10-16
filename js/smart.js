@@ -562,7 +562,7 @@ const Smart = (function () {
                   d != null ? h("span", { class: "delta small " + (d >= 0 ? "up" : "down") }, (d >= 0 ? "+" : "") + d) : null);
               }))
             : h("p", { class: "muted" }, Store.weeklyDue()
-                ? "لسه مخدتش أول اختبار قياس. 12 سؤال وهيبقى عندك خط أساس."
+                ? "لسه مخدتش أول اختبار قياس. 25 سؤال وهيبقى عندك خط أساس."
                 : "هيبقى متاح تاني بعد أسبوع من آخر اختبار.")),
 
         ORDER.map(k => sectionReport(k, state)),

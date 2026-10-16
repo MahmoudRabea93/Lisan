@@ -426,12 +426,10 @@ const Lesson = (function () {
         h("div", { class: "mk-head" },
           h("span", { class: "mk-n", "aria-hidden": "true" }, String(n)),
           h("span", { class: "mk-tag" }, LABELS[m.section] + (m.phase === "final" ? " · الاختبار" : "")),
-          m.speak && Speech.supported
-            ? h("button", { class: "play tiny", type: "button", "aria-label": "نطق الإجابة الصحيحة", onclick: () => Speech.say(m.correct) }, icon("speaker"))
-            : null),
-        h("p", { class: "mk-q", dir: "auto" }, m.question),
+          ),
+        h("p", { class: "mk-q", dir: "auto", speak: m.speak ? String(m.question).replace(/_+/g, "blank") : null }, m.question),
         h("p", { class: "mk-line wrong" }, h("span", { class: "mk-label" }, "إجابتك: "), h("span", { dir: "auto" }, m.your)),
-        h("p", { class: "mk-line right" }, h("span", { class: "mk-label" }, "الصح: "), h("span", { dir: "auto" }, m.correct)),
+        h("p", { class: "mk-line right", speak: m.speak ? String(m.correct) : null }, h("span", { class: "mk-label" }, "الصح: "), h("span", { dir: "auto" }, m.correct)),
         h("p", { class: "mk-why" }, h("span", { class: "mk-icon", "aria-hidden": "true" }, icon("bulb")), h("span", { dir: "auto" }, m.why)));
     }
 

@@ -129,7 +129,7 @@ const Dashboard = (function () {
     if (state.placement) return null;
     return h("section", { class: "card" },
       h("h2", { class: "card-title" }, "مش متأكد من مستواك؟"),
-      h("p", { class: "muted" }, "اختبار قصير (15 سؤال) بيحدد نقطة البداية ويفتح لك اللي أنت عارفه."),
+      h("p", { class: "muted" }, "اختبار قصير (25 سؤال) بيحدد نقطة البداية ويفتح لك اللي أنت عارفه."),
       h("a", { class: "btn secondary", href: Router.href("/placement") }, "اختبار تحديد المستوى"));
   }
 

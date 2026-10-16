@@ -1,7 +1,9 @@
 // أدوات مشتركة: إنشاء عناصر، خلط، عرض شاشة، قائمة اختيارات، أيقونات، إعلانات قارئ الشاشة
 function h(tag, attrs, ...kids) {
   const el = document.createElement(tag);
+  let speak = null; // speak: true => اقرا النص اللي جوه العنصر، أو نص محدد
   for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "speak") { speak = v; continue; }
     if (v === false || v == null) continue;
     if (k === "class") el.className = v;
     else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
@@ -11,6 +13,13 @@ function h(tag, attrs, ...kids) {
     if (c == null || c === false) return;
     el.append(c.nodeType ? c : document.createTextNode(typeof Language !== "undefined" ? Language.t(c) : c));
   });
+  if (speak && typeof Speech !== "undefined" && Speech.supported) {
+    const text = speak === true ? el.textContent : String(speak);
+    el.append(h("button", {
+      class: "play tiny", type: "button", title: "نطق الجملة", "aria-label": "نطق الجملة",
+      onclick: () => Speech.say(text)
+    }, icon("speaker")));
+  }
   return el;
 }
 

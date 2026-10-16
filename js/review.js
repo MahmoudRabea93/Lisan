@@ -80,7 +80,8 @@ const Review = (function () {
       const wrong = [...new Set(shuffle(pool.filter(p => p.en !== item.en))
         .map(p => (toArabic ? p.ar : p.en)).filter(t => t !== answer))].slice(0, 3);
 
-      const exBox = h("p", { class: "example", dir: "ltr", lang: "en", hidden: true });
+      const exText = h("span", {});
+      const exBox = h("p", { class: "example", dir: "ltr", lang: "en", hidden: true }, exText, h("button", { class: "play tiny", type: "button", "aria-label": "نطق الجملة", onclick: () => Speech.say(exText.textContent) }, icon("speaker")));
       const feedback = h("div", { class: "feedback", role: "status", "aria-live": "polite" });
       const nextBtn = h("button", { class: "btn primary wide", type: "button", hidden: true }, "التالي");
 
@@ -93,7 +94,7 @@ const Review = (function () {
         if (!ok && !item.retry) queue.push({ ...item, retry: true });
         showFeedback(feedback, ok, answer);
         const example = (Vocab.find(item.en) || {}).ex;
-        if (example) { exBox.textContent = example; exBox.hidden = false; }
+        if (example) { exText.textContent = example; exBox.hidden = false; }
         if (!toArabic) Speech.say(item.en);
         nextBtn.hidden = false;
         nextBtn.focus();
