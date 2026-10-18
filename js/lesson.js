@@ -7,20 +7,54 @@ const Lesson = (function () {
   const XP_FINAL = 10;
 
   // mode: "learn" = التمارين بس، "exam" = امتحان الدرس لوحده
-  function run(lesson, handlers, mode) {
-    const plan = Builder.build(lesson, Speech.supported);
-    const steps = plan.steps;
+  // opts.resume: كمّل من نفس السؤال. opts.fresh: ابدأ من الأول
+  function run(lesson, handlers, mode, opts) {
+    opts = opts || {};
     const exam = mode === "exam";
+    const saved = exam ? null : Store.getResume(lesson.id);
+    if (saved && !opts.resume && !opts.fresh) return showResumeChoice(saved);
+
+    const resuming = !!(saved && opts.resume && !exam);
+    if (!exam && !resuming) Store.clearResume(lesson.id);
+    const plan = resuming ? saved.plan : Builder.build(lesson, Speech.supported, Pronounce.supported);
+    const steps = plan.steps;
     const startAt = exam ? plan.finalStart : 0;
     const endAt = exam ? steps.length : plan.finalStart;
-    let i = startAt;
-    let finalIntroShown = false;
-    const stats = {};
-    let finalRight = 0, finalTotal = 0, practiceRight = 0, practiceTotal = 0;
-    const missed = new Map();
-    const mistakes = [];
+    let i = resuming ? saved.i : startAt;
+    let finalIntroShown = resuming ? !!saved.finalIntroShown : false;
+    const stats = resuming ? saved.stats : {};
+    let finalRight = resuming ? saved.finalRight : 0, finalTotal = resuming ? saved.finalTotal : 0;
+    let practiceRight = resuming ? saved.practiceRight : 0, practiceTotal = resuming ? saved.practiceTotal : 0;
+    const missed = new Map(resuming ? saved.missed : []);
+    const mistakes = resuming ? saved.mistakes : [];
+
+    // نحفظ مكان الطالب بعد كل إجابة، عشان يرجع له لو خرج
+    function persist() {
+      if (exam || i >= steps.length) return;
+      Store.saveResume(lesson.id, {
+        plan, i, finalIntroShown, stats, finalRight, finalTotal, practiceRight, practiceTotal,
+        missed: [...missed.entries()], mistakes
+      });
+    }
+
+    // شاشة الاختيار: كمّل ولا ابدأ من الأول
+    function showResumeChoice(r) {
+      const all = Math.max(1, r.plan.steps.length);
+      const at = Math.min(Math.max(r.i + 1, 1), all);
+      mount(h("main", { class: "screen" },
+        h("div", { class: "topbar" },
+          h("button", { class: "close", type: "button", "aria-label": "رجوع", onclick: handlers.onExit }, icon("close")),
+          h("div", { class: "topbar-main" }, h("strong", { dir: "auto" }, lesson.title))),
+        h("h1", { tabindex: "-1", "data-focus": "" }, "عندك درس واقف في النص"),
+        h("p", { class: "muted" }, `وقفت عند خطوة ${at} من ${all}. تحب تكمل من نفس المكان ولا تبدأ من الأول؟`),
+        bar(
+          button("كمّل من حيث وقفت", "primary wide", () => run(lesson, handlers, mode, { resume: true })),
+          button("ابدأ من الأول", "secondary wide", () => run(lesson, handlers, mode, { fresh: true })))),
+        { title: lesson.title });
+    }
 
     if (exam) { finalIntroShown = true; showFinalIntro(); }
+    else if (resuming) showStep();
     else showIntro();
 
     // ---------- شرح الخطأ ----------
@@ -73,6 +107,9 @@ const Lesson = (function () {
 
     function questionOf(step) {
       if (step.type === "dictation") return "إملاء: " + step.shown;
+      if (step.type === "spell") return "اكتب الكلمة اللي سمعتها";
+      if (step.type === "say") return "قول الجملة اللي سمعتها: " + step.say;
+      if (step.type === "pic") return "اختار الصورة اللي معناها «" + step.question + "»";
       if (step.type === "listen") return "اسمع واختار الجملة اللي سمعتها";
       if (step.type === "order") return step.prompt || step.hint || "رتّب الكلمات لتكوّن جملة صحيحة";
       if (step.type === "write") return step.prompt;
@@ -97,7 +134,7 @@ const Lesson = (function () {
 
     // ---------- عناصر مشتركة ----------
     function exit() {
-      if (i > startAt && i < endAt && !confirm("تخرج من الدرس؟ تقدمك في التمارين دي هيضيع.")) return;
+      if (i > startAt && i < endAt && !confirm("تخرج من الدرس؟ تقدر ترجع لنفس السؤال بعدين.")) return;
       handlers.onExit();
     }
 
@@ -107,16 +144,17 @@ const Lesson = (function () {
         h("div", { class: "topbar-main" },
           h("div", { class: "topbar-row" },
             h("strong", { dir: "auto" }, lesson.title),
-            h("span", {}, (() => {
-          // العداد: رقم السؤال الحالي من إجمالي أسئلة الجزء ده بس
-          const total = Math.max(1, endAt - startAt);
-          const cur = Math.min(Math.max(i - startAt + 1, 1), total);
-          return `${cur} / ${total}`;
+            h("span", { class: "step-count" }, (() => {
+          // العداد: خطوة من إجمالي الدرس كله، ومعاها اسم المرحلة (تمارين أو امتحان)
+          const all = Math.max(1, steps.length);
+          const cur = Math.min(Math.max(i + 1, 1), all);
+          const phase = i >= plan.finalStart ? "الامتحان" : "التمارين";
+          return `${phase} · ${cur} من ${all}`;
         })())),
           h("div", {
             class: "progress", role: "progressbar", "aria-label": "تقدمك في الدرس",
-            "aria-valuemin": "0", "aria-valuemax": String(endAt - startAt), "aria-valuenow": String(i - startAt)
-          }, h("span", { style: `width:${((i - startAt) / (endAt - startAt)) * 100}%` }))));
+            "aria-valuemin": "0", "aria-valuemax": String(steps.length), "aria-valuenow": String(Math.min(i, steps.length))
+          }, h("span", { style: `width:${Math.min(100, (i / Math.max(1, steps.length)) * 100)}%` }))));
     }
 
     function tag(s) {
@@ -131,6 +169,28 @@ const Lesson = (function () {
     }
     function bar(...kids) { return h("div", { class: "step-bar" }, kids.filter(Boolean)); }
 
+    // نصيحة الدرس: أخطاء شائعة مع مثال صح وغلط
+    function tipNode() {
+      const t = (window.LESSON_TIPS || {})[lesson.id];
+      if (!t) return null;
+      return h("aside", { class: "lesson-tip", role: "note" },
+        h("p", { class: "tip-text" }, "💡 " + t.tip),
+        h("div", { class: "tip-pair" },
+          h("span", { class: "tip-no", "aria-label": "غلط" }, "✗"), en(t.wrong, "span", "tip-en"),
+          h("span", { class: "tip-yes", "aria-label": "صح" }, "✓"), en(t.right, "span", "tip-en")));
+    }
+
+    // ملخص الدرس: الكلمات الجديدة والشرح والنصيحة، وزرار طباعة
+    function summaryNode() {
+      return h("section", { class: "lesson-summary" },
+        h("h2", { class: "sub" }, "ملخص الدرس"),
+        withAr(h("p", { class: "explain" }, lesson.explanation), lesson.explanation),
+        h("ul", { class: "sum-words" }, lesson.vocab.map(w => h("li", {},
+          en(w.en, "strong"), wordArNode(w.en)))),
+        tipNode(),
+        h("button", { class: "btn secondary small no-print", type: "button", onclick: () => window.print() }, "اطبع الملخص"));
+    }
+
     function dialogueBox(lines) {
       return People.dialogueNode(lines);
     }
@@ -139,13 +199,16 @@ const Lesson = (function () {
       return h("ul", { class: "word-list" }, words.map(w => h("li", { class: "word-item" },
         h("div", { class: "wi-main" },
           h("div", { class: "wi-en" },
+            wordVisual(w.en, "wi-emoji"),
             en(w.en, "strong"),
             Speech.supported
               ? speakWithSlow("play tiny", "نطق " + w.en, slow => Speech.say(w.en, slow))
               : null,
             wordArNode(w.en)),
           h("div", { class: "wi-ar" }, w.ar),
-          w.ex ? en(w.ex, "p", "wi-ex") : null, w.ex ? exArNode(w.ex) : null))));
+          w.ex ? h("div", { class: "wi-exrow" }, en(w.ex, "p", "wi-ex"),
+            Speech.supported ? h("button", { class: "play tiny", type: "button", "aria-label": "اسمع المثال", title: "اسمع المثال", onclick: () => Speech.say(w.ex, false) }, icon("speaker")) : null) : null,
+          w.ex ? exArNode(w.ex) : null))));
     }
 
     // ---------- شاشات الدرس ----------
@@ -160,6 +223,8 @@ const Lesson = (function () {
         h("h1", { tabindex: "-1", "data-focus": "", dir: "auto" }, lesson.title),
         lesson.ar ? h("p", { class: "muted" }, lesson.ar) : null,
         withAr(h("p", { class: "explain" }, lesson.explanation), lesson.explanation),
+        tipNode(),
+        Pronounce.supported ? null : h("p", { class: "note" }, "تمارين النطق مش شغالة في المتصفح ده. جرّب Chrome أو Edge عشان تستخدمها."),
         h("h2", { class: "sub" }, "كلمات الدرس"),
         wordList(lesson.vocab),
         h("p", { class: "muted" }, "بعد كده: المفردات، الاستماع، المحادثة، القواعد، القراءة، الكتابة. وبعدها امتحان الدرس في صفحة منفصلة."),
@@ -176,6 +241,16 @@ const Lesson = (function () {
         { title: "امتحان الدرس" });
     }
 
+    // سطر الشرح الفوري: معنى الكلمة، أو تلميح القاعدة، أو إشارة للشرح فوق
+    function instantWhy(s) {
+      if (s.word && (window.WORD_AR || {})[s.word.en]) {
+        return h("span", { class: "fb-why-text" }, en("«" + s.word.en + "»", "span"), " معناها «" + (window.WORD_AR || {})[s.word.en] + "»");
+      }
+      if (s.why) return withAr(h("span", { class: "fb-why-text" }, s.why), s.why);
+      if (s.section === "grammar" || s.section === "writing") return h("span", { class: "fb-why-text" }, "راجع القاعدة في شرح الدرس فوق.");
+      return null;
+    }
+
     function showStep() {
       if (i >= endAt) return exam ? showResult() : showPracticeDone();
       if (i === plan.finalStart && !finalIntroShown) {
@@ -183,12 +258,14 @@ const Lesson = (function () {
         return showFinalIntro();
       }
       const s = steps[i];
-      const views = { order: orderView, listen: listenView, listenQ: listenQView, dictation: dictationView, write: writeView, roleplay: roleplayView };
+      const views = { order: orderView, listen: listenView, listenQ: listenQView, dictation: dictationView, write: writeView, roleplay: roleplayView, pic: picView, spell: spellView, match: matchView, say: sayView };
+      window.instantWhy = () => instantWhy(s);
       const view = (views[s.type] || choiceView)(s, record);
       mount(h("main", { class: "screen" }, topBar(), tag(s), view), { announce: false });
     }
 
     function record(ok, chosen, skipMistake) {
+      window.instantWhy = null;
       const s = steps[i];
       const st = (stats[s.section] = stats[s.section] || { right: 0, total: 0 });
       st.total++;
@@ -203,6 +280,7 @@ const Lesson = (function () {
         Store.markFixed({ lessonId: lesson.id, section: s.section, question: questionOf(s), answer: expectedOf(s) });
       }
       i++;
+      persist();
       showStep();
     }
 
@@ -223,7 +301,9 @@ const Lesson = (function () {
         if (/^[1-9]$/.test(e.key)) list.pick(Number(e.key) - 1);
         else if (e.key === "Enter" && e.target.tagName !== "BUTTON" && !nextBtn.hidden) nextBtn.click();
       });
-      return h("section", {}, head, list.node, tail, bar(feedback, nextBtn));
+      return h("section", {}, head, list.node, tail,
+        h("p", { class: "kbd-hint muted small" }, "اختصارات: اضغط 1 لـ 4 للاختيار، وEnter للتالي"),
+        bar(feedback, nextBtn));
     }
 
     // الجزء الإنجليزي بس من النص عشان يتنطق (الفراغ ___ بيتقرا "blank")
@@ -241,11 +321,14 @@ const Lesson = (function () {
       const say = speakText(text);
       if (!Speech.supported || !/[A-Za-z]/.test(say)) return q;
       const english = !/[\u0600-\u06FF]/.test(String(text));
+      // الصوت بيبدأ لوحده أول ما السؤال يظهر (لو مفعّل من الإعدادات)
+      if (Speech.getAutoplay()) setTimeout(() => Speech.say(say, false), 350);
       return h("div", { class: "question-row", dir: english ? "ltr" : "rtl" }, q, speakBtn(say, "اسمع السؤال"));
     }
 
     function choiceView(ex, done) {
       const passageSay = ex.passage && Speech.supported ? speakText(ex.passage) : "";
+      if (passageSay && Speech.getAutoplay()) setTimeout(() => Speech.say(passageSay, false), 350);
       return choiceLike(ex, done, h("div", {},
         ex.prompt ? withAr(h("p", { class: "prompt" }, ex.prompt), ex.prompt) : null,
         ex.passage ? en(ex.passage, "blockquote", "passage") : null,
@@ -271,14 +354,246 @@ const Lesson = (function () {
     function listenQView(ex, done) {
       const play = slow => Speech.sayLines(ex.lines, slow);
       setTimeout(() => play(false), 350);
-      const transcript = h("details", { class: "transcript" },
-        h("summary", {}, "اعرض نص الحوار"),
-        dialogueBox(ex.lines));
+      // الحوار مكتوب فوق ظاهر على طول، والسؤال تحته
       return choiceLike(ex, done, h("div", {},
         h("p", { class: "prompt" }, "اسمع الحوار القصير وجاوب"),
         listenControls(play),
-        withAr(h("p", { class: "question", dir: "auto" }, ex.question), ex.question)),
-        () => { transcript.open = true; }, transcript);
+        dialogueBox(ex.lines),
+        withAr(h("p", { class: "question", dir: "auto" }, ex.question), ex.question)));
+    }
+
+    // ---------- تمارين الصورة والاستماع والربط ----------
+    function picView(ex, done) {
+      const feedback = feedbackBox();
+      let ok = false, picked = null, answered = false;
+      const nextBtn = button("التالي", "primary wide", () => done(ok, picked), true);
+      const buttons = shuffle(ex.options).map((opt, idx) => {
+        const b = h("button", { class: "pic-opt", type: "button", "aria-label": opt, "aria-keyshortcuts": String(idx + 1), "data-value": opt },
+          wordVisual(opt, "pic-ill") || "❔");
+        b.addEventListener("click", () => {
+          if (answered) return;
+          answered = true;
+          ok = opt === ex.answer;
+          picked = opt;
+          b.classList.add(ok ? "right" : "wrong");
+          buttons.forEach(x => { x.disabled = true; });
+          if (!ok) { const right = buttons.find(x => x.dataset.value === ex.answer); if (right) right.classList.add("right"); }
+          showFeedback(feedback, ok, ex.answer);
+          nextBtn.hidden = false;
+          nextBtn.focus();
+        });
+        return b;
+      });
+      onKey(e => {
+        if (/^[1-9]$/.test(e.key) && buttons[Number(e.key) - 1]) buttons[Number(e.key) - 1].click();
+        else if (e.key === "Enter" && e.target.tagName !== "BUTTON" && !nextBtn.hidden) nextBtn.click();
+      });
+      return h("section", {},
+        withAr(h("p", { class: "prompt" }, ex.prompt), ex.prompt),
+        questionRow(ex.question),
+        h("div", { class: "pic-grid", role: "group" }, buttons),
+        bar(feedback, nextBtn));
+    }
+
+    function spellView(ex, done) {
+      const play = slow => Speech.say(ex.say, slow);
+      setTimeout(() => play(false), 350);
+      const arWord = ex.word ? (window.WORD_AR || {})[ex.word.en] : null;
+      const arMeaning = arWord ? " (معناها «" + arWord + "»)" : "";
+      return typedView(ex, done, h("div", {},
+        h("p", { class: "prompt" }, "اسمع واكتب الكلمة اللي سمعتها" + arMeaning),
+        listenControls(play)),
+        v => normText(v) === normText(ex.answer),
+        ok => ok ? "صح، أحسنت" : "الكلمة الصحيحة: " + ex.answer);
+    }
+
+    function matchView(ex, done) {
+      const feedback = feedbackBox();
+      let selected = null, wrong = 0, matched = 0;
+      const total = ex.pairs.length;
+      const nextBtn = button("التالي", "primary wide", () => done(wrong === 0, wrong ? "أخطاء: " + wrong : "وصّلت كله"), true);
+      const mk = (cls, label, pair, side) => ({ side, pair, btn: h("button", { class: "match-btn " + cls, type: "button", dir: "ltr", lang: "en", "aria-label": label }, label) });
+      const lefts = shuffle(ex.pairs).map(p => mk("", p.en, p, "L"));
+      const rights = shuffle(ex.pairs).map(p => {
+        const x = mk("match-emoji", p.en, p, "R");
+        const v = wordVisual(p.en, "match-ill");
+        if (v) { x.btn.textContent = ""; x.btn.append(v); }
+        else x.btn.textContent = p.emoji;
+        return x;
+      });
+      function pick(item) {
+        if (item.btn.disabled) return;
+        if (!selected || selected.side === item.side) {
+          if (selected) selected.btn.classList.remove("selected");
+          selected = item;
+          item.btn.classList.add("selected");
+          return;
+        }
+        const first = selected;
+        first.btn.classList.remove("selected");
+        selected = null;
+        const a = item.side === "L" ? item : first;
+        const b = item.side === "L" ? first : item;
+        const ok = a.pair.en === b.pair.en;
+        if (typeof Sound !== "undefined") Sound.play(ok);
+        if (ok) {
+          [a, b].forEach(x => { x.btn.classList.add("right"); x.btn.disabled = true; });
+          matched++;
+          if (matched === total) {
+            feedback.className = "feedback " + (wrong ? "wrong" : "right");
+            feedback.textContent = wrong ? "خلصت، بس فيه " + wrong + " غلطة" : "صح، أحسنت، وصّلت كله";
+            nextBtn.hidden = false;
+            nextBtn.focus();
+          }
+        } else {
+          wrong++;
+          [a, b].forEach(x => x.btn.classList.add("wrong"));
+          setTimeout(() => [a, b].forEach(x => x.btn.classList.remove("wrong")), 700);
+        }
+      }
+      [...lefts, ...rights].forEach(x => x.btn.addEventListener("click", () => pick(x)));
+      return h("section", {},
+        withAr(h("p", { class: "prompt" }, ex.prompt), ex.prompt),
+        h("div", { class: "match-grid" },
+          h("div", { class: "match-col" }, lefts.map(x => x.btn)),
+          h("div", { class: "match-col" }, rights.map(x => x.btn))),
+        bar(feedback, nextBtn));
+    }
+
+    // رسالة واضحة بسبب مشكلة الميكروفون
+    function micErrorText(err) {
+      const code = err && err.error;
+      if (code === "not-allowed" || code === "service-not-allowed") return "الميكروفون متقفل. افتح إعدادات الموقع في المتصفح وفعّل الميكروفون، وبعدين جرّب تاني.";
+      if (code === "no-speech" || err && err.message === "noresult") return "مسمعتش حاجة. قرّب من الميكروفون وقول الجملة بصوت واضح.";
+      if (code === "audio-capture") return "مفيش ميكروفون متوصل بالجهاز. وصّل ميكروفون أو جرّب جهاز تاني.";
+      if (code === "network") return "التعرف على الكلام محتاج إنترنت. اتأكد من الاتصال وجرّب تاني.";
+      if (err && err.message === "unsupported") return "المتصفح ده مش بيدعم التعرف على الكلام. جرّب Chrome أو Edge.";
+      return "حصلت مشكلة في الميكروفون. جرّب تاني بعد شوية.";
+    }
+
+    // تحدي النطق: الطالب يسمع الجملة، يسجّل صوته، يسمع تسجيله، وبعدين يبعته للتقييم (3 محاولات)
+    function sayView(ex, done) {
+      const feedback = feedbackBox();
+      const play = slow => Speech.say(ex.say, slow);
+      setTimeout(() => play(false), 350);
+      let attempts = 0, passed = false, lastHeard = "";
+      let recorder = null, chunks = [], stream = null, listenP = null, blobUrl = null;
+      const nextBtn = button("التالي", "primary wide", () => done(passed, lastHeard), true);
+
+      const statusEl = h("p", { class: "rec-status muted small", "aria-live": "polite" }, "");
+      const micIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12z"/></svg>';
+      const micBtn = h("button", { class: "mic-main", type: "button", "aria-label": "ابدأ التسجيل", title: "ابدأ التسجيل" });
+      micBtn.innerHTML = micIcon;
+      const endBtn = h("button", { class: "btn secondary small rec-end", type: "button", hidden: true }, "⏹ إنهاء التسجيل");
+      const audio = h("audio", { controls: true, preload: "auto", class: "rec-audio" });
+      const playerWrap = h("div", { class: "rec-player", hidden: true },
+        h("span", { class: "muted small" }, "اسمع تسجيلك"), audio);
+      const sendBtn = h("button", { class: "btn primary small", type: "button", hidden: true }, "ابعت التسجيل");
+      const redoBtn = h("button", { class: "btn secondary small", type: "button", hidden: true }, "سجّل تاني");
+      const heardEl = h("p", { class: "heard muted", dir: "ltr", lang: "en" }, "");
+
+      function setFeedback(ok, text) {
+        feedback.className = "feedback " + (ok ? "right" : "wrong");
+        feedback.textContent = text;
+      }
+
+      async function startRec() {
+        feedback.className = "feedback"; feedback.textContent = "";
+        chunks = [];
+        stream = null;
+        try {
+          if (navigator.mediaDevices && window.MediaRecorder) {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+            recorder.start();
+          }
+        } catch (err) {
+          stream = null; recorder = null;
+          statusEl.textContent = "مش هقدر أسجّل صوتك، بس هقيّم نطقك.";
+        }
+        listenP = Pronounce.listen().then(r => ({ alts: r.alts })).catch(err => ({ err }));
+        micBtn.hidden = true;
+        endBtn.hidden = false;
+        statusEl.textContent = "بسمعك... اضغط إنهاء لما تخلص";
+      }
+
+      function stopRec() {
+        endBtn.hidden = true;
+        const release = () => { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } };
+        const showPlayer = () => {
+          if (blobUrl) audio.src = blobUrl;
+          playerWrap.hidden = !blobUrl;
+          sendBtn.hidden = false;
+          redoBtn.hidden = false;
+          statusEl.textContent = "اسمع تسجيلك، وبعدين ابعته للتقييم أو سجّل تاني";
+        };
+        if (recorder && recorder.state !== "inactive") {
+          recorder.onstop = () => {
+            blobUrl = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType || "audio/webm" }));
+            release();
+            showPlayer();
+          };
+          recorder.stop();
+        } else {
+          release();
+          showPlayer();
+        }
+      }
+
+      async function send() {
+        sendBtn.disabled = true;
+        statusEl.textContent = "بقيّم نطقك...";
+        const r = listenP ? await listenP : { err: new Error("noresult") };
+        attempts++;
+        sendBtn.disabled = false;
+        if (r.err) {
+          setFeedback(false, micErrorText(r.err));
+        } else {
+          lastHeard = r.alts[0] || "";
+          heardEl.textContent = "سمعتك بتقول: " + lastHeard;
+          const s = Pronounce.bestScore(ex.answer, r.alts);
+          if (s >= 0.8) passed = true;
+          else if (attempts < 3) setFeedback(false, s >= 0.6 ? "قريب! حاول تاني ببطء وبوضوح" : "لسه بعيد عن النطق الصح. اسمع تاني وحاول");
+        }
+        if (passed || attempts >= 3) {
+          showFeedback(feedback, passed, ex.answer);
+          sendBtn.hidden = true;
+          redoBtn.hidden = true;
+          micBtn.hidden = true;
+          nextBtn.hidden = false;
+          nextBtn.focus();
+        } else {
+          sendBtn.hidden = true;
+          redoBtn.hidden = false;
+          micBtn.hidden = false;
+          statusEl.textContent = "جرّب تاني. تقدر تسجّل من جديد.";
+        }
+      }
+
+      micBtn.addEventListener("click", () => startRec());
+      endBtn.addEventListener("click", () => stopRec());
+      sendBtn.addEventListener("click", () => send());
+      redoBtn.addEventListener("click", () => {
+        blobUrl = null; audio.removeAttribute("src");
+        playerWrap.hidden = true; sendBtn.hidden = true; redoBtn.hidden = true;
+        heardEl.textContent = "";
+        micBtn.hidden = false;
+        statusEl.textContent = "";
+      });
+
+      return h("section", { class: "say-view" },
+        h("p", { class: "prompt" }, "اسمع الجملة وقولها بصوتك"),
+        withAr(h("p", { class: "question", dir: "ltr", lang: "en" }, ex.say), ex.say),
+        listenControls(play),
+        h("div", { class: "say-controls" },
+          micBtn,
+          endBtn,
+          statusEl),
+        playerWrap,
+        h("div", { class: "say-actions" }, sendBtn, redoBtn),
+        heardEl,
+        bar(feedback, nextBtn));
     }
 
     function typedView(ex, done, head, grade, explain) {
@@ -471,6 +786,7 @@ const Lesson = (function () {
     }
 
     function showResult() {
+      Store.clearResume(lesson.id);
       const pctScore = finalTotal ? Math.round((finalRight / finalTotal) * 100) : 0;
       const xp = finalRight * XP_FINAL;
       const passed = pctScore >= Store.PASS;
@@ -496,7 +812,8 @@ const Lesson = (function () {
       const nextEntry = Catalog.lessonAfter(lesson);
 
       mount(h("main", { class: "screen result" },
-        h("div", { class: "result-head " + (passed ? "ok" : "no") },
+        h("div", { class: "result-head " + (passed ? "ok celebrate" : "no") },
+          passed ? h("span", { class: "result-badge", "aria-hidden": "true" }, "🎉") : null,
           ring(pctScore, { label: "نتيجة امتحان الدرس", size: 108 }),
           h("div", {},
             h("h1", { tabindex: "-1", "data-focus": "" }, passed ? "أحسنت، عدّيت الدرس" : "قريب، جرّب تاني"),
@@ -508,6 +825,8 @@ const Lesson = (function () {
               : null,
             !passed ? h("p", { class: "note" }, `محتاج ${Store.PASS}% عشان تفتح الدرس اللي بعده.`) : null,
             added ? h("p", { class: "muted small" }, `أضفنا ${wordsLabel(added)} لمراجعتك.`) : null)),
+
+        passed ? summaryNode() : null,
 
         h("h2", { class: "sub" }, "أداؤك في كل قسم"),
         h("ul", { class: "result-rows" }, keys.map(k => {

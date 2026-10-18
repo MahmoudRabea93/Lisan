@@ -156,6 +156,7 @@ const Dashboard = (function () {
       body: h("div", { class: "dash" },
         h("h1", { class: "sr-only", tabindex: "-1", "data-focus": "" }, "الرئيسية"),
         mainCard(state),
+        DailyWord.card(),
         state.plan ? Plan.card(state) : planPrompt(),
         started ? statsStrip(state) : null,
         details,

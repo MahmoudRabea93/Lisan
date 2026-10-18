@@ -35,8 +35,11 @@ const Sound = (function () {
     const ac = audio();
     if (!ac) return;
     if (ok) {
-      tone(ac, 660, 0, 0.12, "sine");
-      tone(ac, 880, 0.12, 0.18, "sine");
+      // نغمة مبهجة: 3 نوتات صاعدة (دو - مي - صول) مع لمعة خفيفة فوقهم
+      tone(ac, 523.25, 0.00, 0.22, "sine");
+      tone(ac, 659.25, 0.08, 0.22, "sine");
+      tone(ac, 783.99, 0.16, 0.34, "sine");
+      tone(ac, 1567.98, 0.16, 0.30, "triangle");
     } else {
       tone(ac, 330, 0, 0.14, "triangle");
       tone(ac, 247, 0.14, 0.22, "triangle");

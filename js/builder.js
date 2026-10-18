@@ -55,6 +55,45 @@ const Builder = (function () {
     return { ...base, question: `What does "${w.en}" mean?`, options: [w.ar, ...distract(lesson, w, "ar", 2)], answer: w.ar };
   }
 
+  // ---------- صورة / كتابة بعد الاستماع / ربط ----------
+  function picItem(lesson, w) {
+    if (!emojiFor(w.en)) return null;
+    const key = w.en.toLowerCase();
+    const d = shuffle(Object.keys(EMOJI).filter(k => k !== key)).slice(0, 2);
+    return { section: "vocab", type: "pic", word: { en: w.en, ar: w.ar }, prompt: "اختار الصورة اللي معناها الكلمة دي", question: w.en, options: [key, ...d], answer: key };
+  }
+  function matchItem(lesson) {
+    const ws = shuffle(lesson.vocab.filter(w => emojiFor(w.en))).slice(0, 4);
+    if (ws.length < 3) return null;
+    return { section: "vocab", type: "match", prompt: "وصّل كل كلمة بالصورة بتاعتها", pairs: ws.map(w => ({ en: w.en.toLowerCase(), emoji: emojiFor(w.en), ar: w.ar })) };
+  }
+  function spellItem(lesson, avoid) {
+    const w = shuffle(lesson.vocab.filter(o => o.en.split(" ").length === 1 && !avoid.includes(o.en)))[0];
+    if (!w) return null;
+    return { section: "listening", type: "spell", say: w.en, answer: w.en, word: { en: w.en, ar: w.ar } };
+  }
+
+  // ---------- اسمع واختار: أكتر من تمرين استماع في كل درس ----------
+  function listenChoices(lesson, n, avoid) {
+    const out = [];
+    for (const w of shuffle(lesson.vocab.filter(o => o.ex && !avoid.includes(o.ex)))) {
+      if (out.length >= n) break;
+      const others = shuffle(lesson.vocab.filter(o => o.ex && o.ex !== w.ex)).map(o => o.ex).slice(0, 2);
+      if (others.length < 2) break;
+      out.push({ section: "listening", type: "listen", say: w.ex, options: [w.ex, ...others], answer: w.ex, used: w.en });
+      avoid = [...avoid, w.ex];
+    }
+    return out;
+  }
+
+  // ---------- تحدي النطق: 3 جمل لكل درس ----------
+  function sayItems(lesson, avoid) {
+    const pool = shuffle(lesson.vocab.filter(w => w.ex && w.ex.split(" ").length >= 3 && !(avoid || []).includes(w.ex)));
+    return pool.slice(0, 3).map(w => ({
+      section: "listening", type: "say", say: w.ex, answer: w.ex, word: { en: w.en, ar: w.ar }
+    }));
+  }
+
   // ---------- الاستماع ----------
   function withSentence(lesson, avoid, min) {
     return shuffle(lesson.vocab.filter(w => w.ex && w.ex.split(" ").length >= (min || 4) && locate(w.ex, w.en) && !avoid.includes(w.en)));
@@ -65,7 +104,7 @@ const Builder = (function () {
     return { section: "listening", type: "dictation", say: w.ex, shown: blank(w.ex, w.en), answer: w.en, full: w.ex };
   }
   function listenEx(lesson, avoid, notSay) {
-    const w = shuffle(lesson.vocab.filter(o => o.ex && o.ex.split(" ").length >= 3 && !(avoid || []).includes(o.en) && o.ex !== notSay))[0];
+    const w = shuffle(lesson.vocab.filter(o => o.ex && o.ex.split(" ").length >= 3 && !(avoid || []).includes(o.en) && ![].concat(notSay || []).includes(o.ex)))[0];
     if (!w) return null;
     const others = shuffle(lesson.vocab.filter(o => o.en !== w.en && o.ex && o.ex !== w.ex)).slice(0, 2).map(o => o.ex);
     if (others.length < 2) return null;
@@ -117,12 +156,17 @@ const Builder = (function () {
   }
 
   // ---------- التجميع ----------
-  function build(lesson, audioOK) {
+  function build(lesson, audioOK, canSpeak) {
     const words = shuffle(lesson.vocab);
     const n = words.length;
     const pk = ["meaning", "cloze", "reverse", "cloze", "use"];
     const fk = ["reverse", "use", "meaning", "reverse", "cloze"];
     const vocab = pk.map((k, i) => vocabItem(k, words[i % n], lesson));
+    const pw = shuffle(lesson.vocab.filter(w => emojiFor(w.en)))[0];
+    const pic = pw ? picItem(lesson, pw) : null;
+    if (pic) vocab.push(pic);
+    const mt = matchItem(lesson);
+    if (mt) vocab.push(mt);
     const finalVocab = Array.from({ length: 7 }, (_, i) => {
       const j = (i + 2) % n;
       return vocabItem(fk[j % 5], words[j], lesson);
@@ -133,11 +177,18 @@ const Builder = (function () {
     if (own) listening.push({ ...own });
     const d1 = dictation(lesson, []);
     if (d1) listening.push(d1);
+    // أكتر من تمرين "اسمع واختار" في الدرس (4 على الأقل لو الكلمات تكفي)
+    if (audioOK) listening.push(...listenChoices(lesson, 4, listening.map(x => x.say).filter(Boolean)));
     if (lesson.talk && lesson.talk.q) listening.push(listenQ(lesson.talk));
     else {
       const d2 = dictation(lesson, d1 ? [d1.answer] : []);
       if (d2) listening.push(d2);
     }
+    if (audioOK) {
+      const sp = spellItem(lesson, []);
+      if (sp) listening.push(sp);
+    }
+    if (audioOK && canSpeak) listening.push(...sayItems(lesson, listening.map(x => x.say).filter(Boolean)));
     if (audioOK && listening.length < 3) {
       const extra = listenEx(lesson, [], own ? own.say : "");
       if (extra) listening.push(extra);
@@ -158,19 +209,48 @@ const Builder = (function () {
     // الاختبار النهائي: مزيج من كل الأقسام
     const final = finalVocab.slice(0, 3);
     if (audioOK) {
-      const e1 = listenEx(lesson, own ? [] : []);
+      const e1 = listenEx(lesson, [], listening.map(x => x.say).filter(Boolean));
       if (e1) final.push(e1);
       const d = dictation(lesson, d1 ? [d1.answer] : []);
       const e2 = d || listenEx(lesson, e1 ? [e1.used] : []);
       if (e2) final.push(e2);
     }
-    if (conv) final.push(conv.final);
-    final.push(...shuffle(grammar).slice(0, 2));
-    if (reading.length) final.push(shuffle(reading)[0]);
+    // الاختبار النهائي لازم يكون أسئلة مختلفة عن أسئلة الدرس.
+    // كل الأسئلة اللي اتسألت في الدرس (القواعد والقراءة والحوار) ما بتتكررش هنا.
+    // الباقي بيتبني من كلمات تانية أو أنواع تانية من الأسئلة.
+    const freshGrammar = lesson.exercises.filter(e => e.type !== "listen").slice(5).map(e => ({ ...e, section: "grammar" }));
+    const usedPic = pw ? [pw.en] : [];
+    const picPool = shuffle(lesson.vocab.filter(w => emojiFor(w.en) && !usedPic.includes(w.en)));
+    const fp = picPool[0] ? picItem(lesson, picPool[0]) : null;
+    if (fp) final.push(fp);
+    if (audioOK) {
+      const usedSpell = listening.filter(x => x.type === "spell").map(x => x.answer);
+      const sp2 = spellItem(lesson, usedSpell);
+      if (sp2) final.push(sp2);
+    }
+    final.push(...freshGrammar.slice(0, 1));
     const o2 = orderItem(lesson, o1 ? [o1.used] : []);
     if (o2) final.push(o2);
-    const extras = finalVocab.slice(3).concat(shuffle(grammar));
-    while (final.length < FINAL && extras.length) final.push(extras.shift());
+    const extras = finalVocab.slice(3).concat(freshGrammar.slice(1));
+
+    // أي سؤال طلع مكرر من أسئلة الدرس بيتشال
+    const keyOf = x => JSON.stringify([x.type, x.question || x.say || x.hint || x.prompt || "", x.answer || ""]);
+    const practiceKeys = new Set(sections.flatMap(([, items]) => items.map(keyOf)));
+    for (let k = final.length - 1; k >= 0; k--) if (practiceKeys.has(keyOf(final[k]))) final.splice(k, 1);
+
+    // لو الاختبار لسه ناقص: نملّيه بأسئلة كلمات بأنواع تانية ما اتسألتش في الدرس
+    const finalKeys = new Set(final.map(keyOf));
+    const fillKinds = ["reverse", "use", "meaning", "cloze"];
+    for (const w of shuffle(lesson.vocab)) {
+      for (const kind of fillKinds) {
+        if (final.length >= FINAL) break;
+        const it = vocabItem(kind, w, lesson);
+        const kk = keyOf(it);
+        if (practiceKeys.has(kk) || finalKeys.has(kk)) continue;
+        final.push(it);
+        finalKeys.add(kk);
+      }
+    }
 
     const steps = [];
     sections.forEach(([key, items]) => items.forEach((it, k) =>

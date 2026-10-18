@@ -24,6 +24,7 @@ const Store = (function () {
       errors: {},        // سجل الأخطاء المتكررة
       weekly: [],        // نتائج الاختبار الأسبوعي
       plan: null,        // {goal, minutes, since}
+      resume: {},        // lessonId -> نقطة الرجوع: الخطة + السؤال الحالي + النتايج لحد دلوقتي
       planDay: null,     // {date, tasks:[...]} — خطة النهاردة
       profile: { name: "", photo: "" }   // الاسم والصورة (الصورة مصغّرة dataURL)
 
@@ -409,6 +410,24 @@ const Store = (function () {
     if (keep.name || keep.photo) setProfile(keep);
   }
 
+  // نقطة الرجوع للدرس: عشان الطالب يكمّل من نفس السؤال حتى لو خرج
+  function getResume(lessonId) {
+    const r = load().resume || {};
+    return r[lessonId] || null;
+  }
+  function saveResume(lessonId, data) {
+    const s = load();
+    s.resume = s.resume || {};
+    s.resume[lessonId] = { ...data, savedAt: new Date().toISOString() };
+    save(s);
+  }
+  function clearResume(lessonId) {
+    const s = load();
+    if (!s.resume || !s.resume[lessonId]) return;
+    delete s.resume[lessonId];
+    save(s);
+  }
+
   function exportJson() { return JSON.stringify(load(), null, 2); }
 
   return {
@@ -421,6 +440,7 @@ const Store = (function () {
     recordLesson, attempts, bestScore, addXp,
     addWords, dueWords, wordCount, masteredCount, gradeWord,
     setPlacement, liveStreak, dailySeries, skillStats, totals, reset, exportJson,
-    getProfile, setProfile
+    getProfile, setProfile,
+    getResume, saveResume, clearResume
   };
 })();

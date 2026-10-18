@@ -32,6 +32,11 @@ const Speech = (function () {
   // صوت لكل شخص: بنختار صوت ست أو راجل لو المتصفح فيه، وإلا بنفرّق بين صوتين مختلفين
   function voiceFor(person, index) {
     if (!voices.length) return null;
+    const pv = prefs().voice;
+    if (pv) {
+      const chosen = voices.find(v => v.name === pv);
+      if (chosen) return index === 1 ? (voices.find(v => v !== chosen) || chosen) : chosen;
+    }
     const female = voices.filter(v => /female|samantha|zira|aria|jenny|hazel|susan|karen|moira|woman/i.test(v.name));
     const male = voices.filter(v => /male|david|mark|guy|daniel|james|alex|fred|george|ryan|tom/i.test(v.name) && !/female/i.test(v.name));
     if (person && person.gender === "f" && female.length) return female[0];
@@ -44,6 +49,16 @@ const Speech = (function () {
   // كده الصوت بيبان بطيء حتى لو المتصفح/الصوت مابيحترمش خاصية السرعة (زي أصوات جوجل في Chrome)
   const SLOW_GAP = 800; // ملي ثانية بين كل كلمة
   let slowTimers = [];
+
+  // إعدادات المستخدم للنطق: السرعة والصوت (بتتحفظ في المتصفح)
+  const PREF_KEY = "speechPrefs";
+  function prefs() {
+    try { return { rate: 0.95, voice: "", autoplay: true, ...JSON.parse(localStorage.getItem(PREF_KEY) || "{}") }; }
+    catch (e) { return { rate: 0.95, voice: "", autoplay: true }; }
+  }
+  function savePrefs(p) {
+    try { localStorage.setItem(PREF_KEY, JSON.stringify({ ...prefs(), ...p })); } catch (e) {}
+  }
 
   function speakQueue(items, slow) {
     if (!supported) return;
@@ -59,7 +74,7 @@ const Speech = (function () {
           const u = new SpeechSynthesisUtterance(piece);
           u.lang = "en-US";
           if (it.voice) u.voice = it.voice;
-          u.rate = slow ? 0.7 : 0.95;
+          u.rate = slow ? 0.7 : prefs().rate;
           u.pitch = it.pitch || 1;
           speechSynthesis.speak(u);
         };
@@ -95,5 +110,14 @@ const Speech = (function () {
     speakQueue(items, slow);
   }
 
-  return { supported, say, sayLines };
+  return {
+    supported, say, sayLines,
+    getVoices: () => voices.slice(),
+    getRate: () => prefs().rate,
+    getVoiceName: () => prefs().voice,
+    setRate: r => savePrefs({ rate: Number(r) }),
+    setVoice: name => savePrefs({ voice: name || "" }),
+    getAutoplay: () => prefs().autoplay !== false,
+    setAutoplay: v => savePrefs({ autoplay: !!v })
+  };
 })();

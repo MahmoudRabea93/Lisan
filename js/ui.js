@@ -231,6 +231,7 @@ function optionList(opts, answer, onAnswered) {
 
 function showFeedback(el, ok, answer) {
   el.className = "feedback " + (ok ? "right" : "wrong");
+  reactTo(el, ok);
   if (typeof Sound !== "undefined") Sound.play(!!ok);
   // replaceChildren turns null into the text "null", so drop empty parts first
   el.replaceChildren(...[
@@ -238,6 +239,55 @@ function showFeedback(el, ok, answer) {
     h("span", {}, ok ? "صح، أحسنت" : "الإجابة الصحيحة: "),
     ok ? null : h("b", { dir: "auto" }, answer)
   ].filter(Boolean));
+  // شرح سطر واحد فوراً بعد الغلط (الشاشة بتجهزه قبل الإجابة)
+  if (!ok && typeof window.instantWhy === "function") {
+    const why = window.instantWhy();
+    if (why) el.append(h("div", { class: "fb-why" }, why));
+  }
+}
+
+// رد فعل بصري خفيف على الإجابة: نبضة للصح وهزة صغيرة للغلط (بتتقفل لو المستخدم طلب تقليل الحركة)
+function sparkle(el) {
+  const host = el && el.closest ? (el.closest(".step-bar") || el) : null;
+  if (!host) return;
+  const colors = ["#FFD166", "#06D6A0", "#EF476F", "#118AB2", "#FFB703"];
+  const burst = h("span", { class: "sparkle-burst", "aria-hidden": "true" });
+  for (let k = 0; k < 14; k++) {
+    const ang = (Math.PI * 2 * k) / 14 + Math.random() * 0.4;
+    const dist = 60 + Math.random() * 50;
+    const p = h("span", { class: "spark" });
+    p.style.setProperty("--dx", Math.round(Math.cos(ang) * dist) + "px");
+    p.style.setProperty("--dy", Math.round(Math.sin(ang) * dist) + "px");
+    p.style.background = colors[k % colors.length];
+    p.style.animationDelay = (Math.random() * 0.08).toFixed(2) + "s";
+    burst.append(p);
+  }
+  host.append(burst);
+  setTimeout(() => burst.remove(), 1000);
+}
+
+function reactTo(el, ok) {
+  const screen = el && el.closest ? el.closest(".screen") : null;
+  const calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (ok && !calm) sparkle(el);
+  if (!screen || calm) return;
+  const cls = ok ? "react-ok" : "react-no";
+  screen.classList.remove("react-ok", "react-no");
+  void screen.offsetWidth;   // إعادة تشغيل الحركة لو اتكررت
+  screen.classList.add(cls);
+  setTimeout(() => screen.classList.remove(cls), 600);
+}
+
+// صورة الكلمة: رسمة SVG لو موجودة، وإلا الإيموجي. بتتحرك بلطف عشان تجذب النظر
+function wordVisual(en, cls) {
+  const svg = typeof illustrationFor === "function" ? illustrationFor(en) : null;
+  if (svg) {
+    const span = h("span", { class: "ill " + (cls || ""), "aria-hidden": "true" });
+    span.innerHTML = svg;
+    return span;
+  }
+  const em = typeof emojiFor === "function" ? emojiFor(en) : null;
+  return em ? h("span", { class: "ill-emoji " + (cls || ""), "aria-hidden": "true" }, em) : null;
 }
 
 function wordsLabel(n) {

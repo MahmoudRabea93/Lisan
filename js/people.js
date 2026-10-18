@@ -71,7 +71,8 @@ const People = (function () {
           avatar(p),
           h("div", { class: "dline-body" },
             h("b", {}, p.name),
-            withAr(h("span", {}, l.text === null ? h("span", { class: "gap" }, "______") : l.text), l.text)));
+            withAr(h("span", {}, l.text === null ? h("span", { class: "gap" }, "______") : l.text), l.text),
+            (l.text && Speech.supported) ? h("button", { class: "play tiny dline-play", type: "button", "aria-label": "اسمع السطر", title: "اسمع السطر", onclick: () => Speech.say(l.text, false) }, icon("speaker")) : null));
       }));
   }
 
